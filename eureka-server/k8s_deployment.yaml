@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eureka-deployment
+spec:
+  selector:
+    matchLabels:
+      app: eureka
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: eureka
+    spec:
+      initContainers:
+        - image: image.cloud.local:4000/sidecar-skywalking:8.4.0
+          name: skywalking-agent-sidecar
+          imagePullPolicy: IfNotPresent
+          command: ['sh']
+          args: ['-c','mkdir -p /skywalking/agent && cp -r /usr/skywalking/agent/* /skywalking/agent']
+          volumeMounts:
+            - mountPath: /skywalking/agent
+              name: skywalking-agent
+      containers:
+        - name: eureka
+          image: 192.168.10.29:4000/test-pipe:2021022615423141
+          env:
+            - name: JAVA_OPTS
+              value: -javaagent:/usr/skywalking/agent/skywalking-agent.jar
+            - name: SW_AGENT_NAME
+              value: eureka
+            - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+              value: oap.cloud.local:11800
+          ports:
+            - containerPort: 8761
+          volumeMounts:
+            - mountPath: /usr/skywalking/agent
+              name: skywalking-agent
+      volumes:
+        - name: skywalking-agent
+          emptyDir: {}
