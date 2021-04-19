@@ -1,4 +1,4 @@
-FROM docker.cloud.local:4000/jdk:1.8
+FROM docker.cloud.local:4000/alpine/jdk:1.8
 EXPOSE 8761
 ADD  target/eureka-server-0.0.1-SNAPSHOT.jar /usr/local/eureka/start.jar
 ENV LANG C.UTF-8
